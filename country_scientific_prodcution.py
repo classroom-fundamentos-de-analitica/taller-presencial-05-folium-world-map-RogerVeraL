@@ -1,7 +1,9 @@
+
 """Taller Presencial Evaluable"""
 
 import pandas as pd
 import folium
+
 
 def load_affiliations():
     """Carga el archivo scopus-papers.csv y retorna un dataframe con la columna 'Affiliations'"""
@@ -12,6 +14,7 @@ def load_affiliations():
     )[["Affiliations"]]
     return dataframe
   
+  
 def remove_na_rows(affiliations):
     """Elimina las filas con valores nulos en la columna 'Affiliations'"""
 
@@ -19,8 +22,6 @@ def remove_na_rows(affiliations):
     affiliations = affiliations.dropna(subset=["Affiliations"])
 
     return affiliations
-  
-
   
   
 def add_countries_column(affiliations):
@@ -39,8 +40,8 @@ def add_countries_column(affiliations):
     affiliations["countries"] = affiliations["countries"].str.join(", ")
 
     return affiliations
-  
-  
+
+
 def clean_countries(affiliations):
 
     affiliations = affiliations.copy()
@@ -48,43 +49,42 @@ def clean_countries(affiliations):
         "United States", "United States of America"
     )
     return affiliations
-  
-def count_country_frequency(affiliations):
-    """Cuenta la frecuencia de cada país en la columna 'countries'"""
 
+
+def count_country_frequency(affiliations):
+    """Cuenta la frecuencia de aparición de cada país en la columna 'countries'"""
     countries = affiliations["countries"].copy()
-    countries = countries.str.split(", ")
+    countries = affiliations["countries"].str.split(", ")
     countries = countries.explode()
     countries = countries.value_counts()
     return countries
-  
-def plot_world_map(countries):
-    """grafica un mapa mundial con el número de publicaciones por país"""
-    countries = countries.copy()
-    countries = countries.to_frame()
-    countries = countries.reset_index()
 
+
+def plot_world_map(countries):
     m = folium.Map(location=[0, 0], zoom_start=2)
     
     folium.Choropleth(
-            geo_data="https://raw.githubusercontent.com/python-visualization/folium/master/examples/data/world-countries.json",
-            data=countries,
-            columns=["countries", "count"],
-            key_on="feature.properties.name",
-            fill_color="Greens",
-        ).add_to(m)
+        geo_data="https://raw.githubusercontent.com/python-visualization/folium/master/examples/data/world-countries.json",
+        data=countries,
+        columns=["country", "count"],
+        key_on="feature.properties.name",
+        fill_color="Greens",
+    ).add_to(m)
+
     m.save("map.html")
 
 
 def main():
-    # funcion principal
-    df = load_affiliations()
-    df = remove_na_rows(df)
-    df = add_countries_column(df)
-    df = clean_countries(df)
-    countries = count_country_frequency(df)
+    """Función principal"""
+    affiliations = load_affiliations()
+    affiliations = remove_na_rows(affiliations)
+    affiliations = add_countries_column(affiliations)
+    affiliations = clean_countries(affiliations)
+    countries = count_country_frequency(affiliations)
     countries.to_csv("countries.csv")
     plot_world_map(countries)
 
+
 if __name__ == "__main__":
-    main()
+  main()
+
